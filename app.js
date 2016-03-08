@@ -10,6 +10,22 @@ var bodyParser = require('body-parser');
 
 var app = express();
 var port = process.env.PORT||1337;
+var mongoose = require('mongoose');
+
+mongoose.connect('mongodb://localhost/mydb');
+
+var user=mongoose.model('user',{name:String, age: Number});
+
+var user1=new user({name:'Suguna', age:21});
+var user2=new user({name:'Pyunika', age:21});
+var user3=new user({name:'Mihir', age:23});
+var user4=new user({name:'Dhawal', age:23});
+savedata(user1);
+savedata(user2);
+savedata(user3);
+savedata(user4);
+//console.log(user1);
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -33,26 +49,54 @@ app.get('/',function(req,res) {
 app.listen(port, function() {
   console.log('Listening on port: '+ port);
 });
+function savedata(users) {
+  users.save(function(err,userobj) {
+    if(err) {
+      console.log('Error');
+      console.log(err);
+    } else {
+      console.log('saved sucessfully: ',userobj);
+    }
+  });
+}
+
+function fetch(){
+  user.find({age: 23}, function(err, userobj) {
+    if(err) {
+      console.log(err);
+    } else if(userobj){
+      console.log('Found: ',userobj);
+      fire(userobj);
+    } else {
+      console.log('Not found.');
+    }
+  });
+}
+
 
 app.post('/hello',function(req, res, next) {
-  var username = req.body.user_name;
-  var botPayload = {
-    text: 'Hello' + username + 'welcome to slack'
-  };
-  if(username!=='sample1') {
-    return res.status(200).json(botPayload);
-  } else {
-    return res.status(200).end();
+  fetch();
+  function fire(result) {
+    var uname = req.body.user_name;
+    var botPayload = {
+      text: result
+    };
+    if(uname!=='slackbot') {
+      return res.status(200).json(botPayload);
+    } else {
+      return res.status(200).end();
+    }
   }
-})
+});
+
 
 // catch 404 and forward to error handler
-/*app.use(function(req, res, next) {
+app.use(function(req, res, next) {
   var err = new Error('Not Found');
   err.status = 404;
   next(err);
 });
-*/
+
 // error handlers
 
 // development error handler
@@ -76,6 +120,7 @@ app.post('/hello',function(req, res, next) {
     error: {}
   });
 }); */
+
 
 
 module.exports = app;
